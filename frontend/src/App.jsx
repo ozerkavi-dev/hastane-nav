@@ -77,10 +77,12 @@ export default function App() {
     };
   }, [data, userLocation, selectedTarget]);
 
-  function handleSelectPoliklinik(p) {
-    setSelectedTarget(p);
-    setActiveFloor(p.floor);
-  }
+function handleSelectPoliklinik(p) {
+  setSelectedTarget(p);
+  // Farklı katta bir hedef seçilse bile, önce BULUNDUĞUN katı göster —
+  // hedef kata geçiş "Diğer kata geç" butonuyla kullanıcının kararı olsun.
+  setActiveFloor(userLocation ? userLocation.floor : p.floor);
+}
 
   const isMultiFloorRoute = Boolean(routeInfo && routeInfo.floorsOnRoute.length > 1);
 
@@ -128,7 +130,7 @@ export default function App() {
 
       {isMultiFloorRoute ? (
         <button className="view-mode-toggle" onClick={() => setActiveFloor(nextRouteFloor)}>
-          ↕ Diğer kata geç (Kat {nextRouteFloor})
+          ↕ Kat {activeFloor} → Kat {nextRouteFloor}
         </button>
       ) : (
         <FloorSwitcher
