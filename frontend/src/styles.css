@@ -248,8 +248,10 @@ body {
 
 /* Varış noktası — kullanıcı konumu işaretçisiyle aynı tarz, daha küçük ve
    farklı renkte (kiremit/kırmızı) */
-.target-marker-dot {
+.target-marker-pin {
   fill: #c0392b;
+  stroke: white;
+  stroke-width: 0.8;
 }
 .target-marker-pulse {
   fill: #e57373;

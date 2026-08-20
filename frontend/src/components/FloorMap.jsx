@@ -5,6 +5,11 @@ import { offsetRoadPoints, getFrameAtWaypoint, ROAD_HALF_WIDTH } from '../roadGe
 import { getProjection, computeOrientTransform, transformToSvgString } from '../svgProjection';
 import { getCategoryStyle, getRoomColors } from '../categoryStyles';
 
+// Resim kullanmak istersen buraya yolu yaz, örn: '/icons/location-pin.png'
+// (dosyayı frontend/public/icons/ klasörüne koyman yeterli — asansör/merdiven
+// ikonlarıyla aynı mantık). null bırakırsan vektör pin kullanılır.
+const TARGET_MARKER_IMAGE = null;
+
 // Asansör/merdiven gibi kategoriler için, oda içine metin yerine ikon
 // basıyoruz. İkon 24x24'lük kendi çizim uzayında tanımlı, odaya göre ölçekleniyor.
 const ICON_CATEGORIES = new Set(['asansor', 'merdiven']);
@@ -342,12 +347,22 @@ export default function FloorMap({
                     r={4}
                     className="target-marker-pulse"
                   />
-                  <circle
-                    cx={waypoints[selectedTarget.entry_waypoint].x}
-                    cy={waypoints[selectedTarget.entry_waypoint].y}
-                    r={2.2}
-                    className="target-marker-dot"
-                  />
+                  {/* rotate(-transform.rotateDeg): harita ne kadar dönerse dönsün, pin
+                      bunun tersini uygulayıp ekranda hep dik kalır */}
+                  <g
+                    transform={`translate(${waypoints[selectedTarget.entry_waypoint].x} ${
+                      waypoints[selectedTarget.entry_waypoint].y
+                    }) rotate(${-transform.rotateDeg})`}
+                  >
+                    {TARGET_MARKER_IMAGE ? (
+                      <image href={TARGET_MARKER_IMAGE} x={-5} y={-11} width={10} height={11} />
+                    ) : (
+                      <path
+                        d="M0,0 C-3,-5 -6,-8.5 -6,-12 A6,6 0 1,1 6,-12 C6,-8.5 3,-5 0,0 Z"
+                        className="target-marker-pin"
+                      />
+                    )}
+                  </g>
                 </g>
               )}
           </g>

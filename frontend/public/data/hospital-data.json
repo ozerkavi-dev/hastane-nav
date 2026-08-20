@@ -5763,7 +5763,7 @@
   },
   {
    "id": "sosyalhizmetler",
-   "name": "SosyalHizmetler",
+   "name": "Sosyal Hizmetler",
    "floor": 1,
    "coordinates": [
     {
@@ -5963,7 +5963,7 @@
   },
   {
    "id": "goguscerrahisi",
-   "name": "GöğüsCerrahisi",
+   "name": "Göğüs Cerrahisi",
    "floor": 1,
    "coordinates": [
     {
@@ -5988,7 +5988,7 @@
   },
   {
    "id": "endoskopiunitesi",
-   "name": "EndoskopiÜnitesi",
+   "name": "Endoskopi Ünitesi",
    "floor": 1,
    "coordinates": [
     {
@@ -6013,7 +6013,7 @@
   },
   {
    "id": "gogus-hastaliklaripolikinligi",
-   "name": "Göğüs HastalıklarıPolikinliği",
+   "name": "Göğüs Hastalıkları Polikinliği",
    "floor": 1,
    "coordinates": [
     {
