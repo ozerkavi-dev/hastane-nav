@@ -296,16 +296,22 @@ export default function FloorMap({
                       </g>
                     )
                   ) : (
-                    <text
-                      x={center.x}
-                      y={center.y}
-                      textAnchor="middle"
-                      transform={
-                        textAngle ? `rotate(${textAngle} ${center.x} ${center.y})` : undefined
-                      }
-                    >
-                      {p.name}
-                    </text>
+                  <text
+                    textAnchor="middle"
+                    transform={
+                      textAngle ? `rotate(${textAngle} ${center.x} ${center.y})` : undefined
+                    }
+                  >
+                    {p.name.split('\n').map((line, i, arr) => (
+                      <tspan
+                        key={i}
+                        x={center.x}
+                        y={center.y + (i - (arr.length - 1) / 2) * 3.2}
+                      >
+                        {line}
+                      </tspan>
+                    ))}
+                  </text>
                   )}
                 </g>
               );
