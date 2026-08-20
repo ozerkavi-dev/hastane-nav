@@ -6113,8 +6113,9 @@
   },
   {
    "id": "taskirmaunitesi",
-   "name": "TaşKırmaÜnitesi",
+   "name": "Taş Kırma Ünitesi",
    "floor": 1,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 197.98,
