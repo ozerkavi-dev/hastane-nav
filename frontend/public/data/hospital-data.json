@@ -6141,6 +6141,7 @@
    "id": "ortopediatolyesi",
    "name": "Ortopedi Atölyesi",
    "floor": 1,
+   "textAngle": 90,   
    "coordinates": [
     {
      "x": 179.98,
@@ -6391,6 +6392,7 @@
    "id": "asistan-odasi-3",
    "name": "Asistan Odası 3",
    "floor": 1,
+   "textAngle": 90,   
    "coordinates": [
     {
      "x": 135.98,
@@ -6564,7 +6566,7 @@
   },
   {
    "id": "patoloji-ogretimuyeleri",
-   "name": "Patoloji ÖğretimÜyeleri",
+   "name": "Patoloji Öğretim Üyeleri",
    "floor": 1,
    "coordinates": [
     {
@@ -6614,8 +6616,9 @@
   },
   {
    "id": "ogretimuyeleriodalari",
-   "name": "ÖğretimÜyeleriOdaları",
+   "name": "Öğretim Üyeleri Odaları",
    "floor": 1,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 346.98,
@@ -6793,8 +6796,9 @@
   },
   {
    "id": "kadin-dogumpolikinligi",
-   "name": "Kadın DoğumPolikinliği",
+   "name": "Kadın Doğum Polikinliği",
    "floor": 1,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 53.98,
@@ -6843,8 +6847,9 @@
   },
   {
    "id": "ogretimuyeleriodalari-2",
-   "name": "ÖğretimÜyeleriOdaları",
+   "name": "Öğretim Üyeleri Odaları",
    "floor": 1,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 12.98,
@@ -6993,8 +6998,9 @@
   },
   {
    "id": "ogretimuyeleriodalari-3",
-   "name": "ÖğretimÜyeleriOdaları",
+   "name": "Öğretim Üyeleri Odaları",
    "floor": 1,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 11.98,
@@ -7018,7 +7024,7 @@
   },
   {
    "id": "fiziktedavipolikinligi",
-   "name": "FizikTedaviPolikinliği",
+   "name": "Fizik Tedavi Polikinliği",
    "floor": 1,
    "coordinates": [
     {
@@ -7168,8 +7174,9 @@
   },
   {
    "id": "enfeksiyon-hastaliklaripolikinligi",
-   "name": "Enfeksiyon HastalıklarıPolikinliği",
+   "name": "Enfeksiyon Hastalıkları Polikinliği",
    "floor": 1,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 303.98,
@@ -7284,8 +7291,9 @@
   },
   {
    "id": "pet-btunitesi",
-   "name": "PET-BTÜnitesi",
+   "name": "PET-BT Ünitesi",
    "floor": 1,
+   "textAngle": 90,   
    "coordinates": [
     {
      "x": 47.98,
@@ -7330,8 +7338,9 @@
   },
   {
    "id": "ogretimuyesiodalari",
-   "name": "ÖğretimÜyesiOdaları",
+   "name": "Öğretim Üyesi Odaları",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 72.5,
@@ -7405,8 +7414,9 @@
   },
   {
    "id": "psikiyatripolikinligi",
-   "name": "PsikiyatriPolikinliği",
+   "name": "Psikiyatri Polikinliği",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 89.5,
@@ -7430,8 +7440,9 @@
   },
   {
    "id": "cocukcerrahipolikinligi",
-   "name": "ÇocukCerrahiPolikinliği",
+   "name": "Çocuk Cerrahi Polikinliği",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 89.5,
@@ -7455,8 +7466,9 @@
   },
   {
    "id": "beyin-cerrahipolikinligi",
-   "name": "Beyin CerrahiPolikinliği",
+   "name": "Beyin Cerrahi Polikinliği",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 248.5,
@@ -7555,8 +7567,9 @@
   },
   {
    "id": "ogretimuyeleriodalari-4",
-   "name": "ÖğretimÜyeleriOdaları",
+   "name": "Öğretim Üyeleri Odaları",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 353.5,
@@ -7705,8 +7718,9 @@
   },
   {
    "id": "dermatolojipolikinligi",
-   "name": "DermatolojiPolikinliği",
+   "name": "Dermatoloji Polikinliği",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 89.5,
@@ -7730,8 +7744,9 @@
   },
   {
    "id": "urolokipolikinligii",
-   "name": "ÜrolokiPolikinliğii",
+   "name": "Üroloji Polikinliği",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 136.5,
@@ -7755,8 +7770,9 @@
   },
   {
    "id": "cocukveergenruhsagligi",
-   "name": "ÇocukVeErgenRuhSağlığı",
+   "name": "Çocuk ve Ergen Ruh Sağlığı",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 136.5,
@@ -7780,8 +7796,9 @@
   },
   {
    "id": "plastik-cerrahipolikinligi",
-   "name": "Plastik CerrahiPolikinliği",
+   "name": "Plastik Cerrahi Polikinliği",
    "floor": 2,
+   "textAngle": 90,
    "coordinates": [
     {
      "x": 136.5,
@@ -7855,7 +7872,7 @@
   },
   {
    "id": "eczacilarodasiburo",
-   "name": "EczacılarOdasıBüro",
+   "name": "Eczacılar Odası",
    "floor": 2,
    "coordinates": [
     {
