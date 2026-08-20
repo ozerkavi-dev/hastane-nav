@@ -106,8 +106,16 @@ function buildWaypointSequences(startWaypoint, endWaypoint, roadMap, roads) {
  * İki waypoint arası en kısa (en az adımlı) rotayı bulur.
  * @returns {string[]|null} waypoint ID dizisi (start -> end), bulunamazsa null
  */
+function countFloorChanges(seq, waypoints) {
+  let changes = 0;
+  for (let i = 1; i < seq.length; i++) {
+    if (waypoints[seq[i]].floor !== waypoints[seq[i - 1]].floor) changes++;
+  }
+  return changes;
+}
+
 export function findRoute(startWaypoint, endWaypoint, data) {
-  const { roads } = data;
+  const { roads, waypoints } = data;
 
   if (startWaypoint === endWaypoint) return [startWaypoint];
 
@@ -116,7 +124,12 @@ export function findRoute(startWaypoint, endWaypoint, data) {
 
   if (startRoads.length === 0 || endRoads.length === 0) return null;
 
+  // Sıralama kriteri artık İKİ aşamalı: önce EN AZ KAT DEĞİŞİMİ (fiziksel
+  // olarak mantıklı rota), sadece kat değişimi sayısı eşitse waypoint
+  // sayısına (mesafeye) bakılıyor. Eskiden sadece waypoint sayısına bakıyordu,
+  // bu da bazen gereksiz kat atlayan ama "sayıca kısa" rotaları seçtiriyordu.
   let best = null;
+  let bestFloorChanges = Infinity;
 
   for (const sRoad of startRoads) {
     for (const eRoad of endRoads) {
@@ -124,7 +137,15 @@ export function findRoute(startWaypoint, endWaypoint, data) {
       const sequences = buildWaypointSequences(startWaypoint, endWaypoint, roadMap, roads);
 
       for (const seq of sequences) {
-        if (!best || seq.length < best.length) best = seq;
+        const floorChanges = countFloorChanges(seq, waypoints);
+        const better =
+          floorChanges < bestFloorChanges ||
+          (floorChanges === bestFloorChanges && (!best || seq.length < best.length));
+
+        if (better) {
+          best = seq;
+          bestFloorChanges = floorChanges;
+        }
       }
     }
   }
