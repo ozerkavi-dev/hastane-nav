@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { getProjection, screenToWorld, applyTransform, invertTransform } from './svgProjection';
 
-const MIN_SCALE = 0.4;
+const MIN_SCALE = 0.8;
 const MAX_SCALE = 6;
 const IDENTITY = { scale: 1, rotateDeg: 0, tx: 0, ty: 0 };
 
