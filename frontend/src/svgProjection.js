@@ -72,6 +72,7 @@ export function angleOfDeg(v) {
 export function computeOrientTransform({
   focusPoint,
   headingVector,
+  rotateDeg: fixedRotateDeg,
   screenFrac,
   scale,
   proj,
@@ -83,8 +84,10 @@ export function computeOrientTransform({
   };
   const targetWorld = screenToWorld(proj, targetScreen);
 
-  const currentHeadingDeg = angleOfDeg(headingVector);
-  const rotateDeg = -90 - currentHeadingDeg; // "yukarı" ekranda -90°'ye denk gelir
+  // rotateDeg doğrudan verildiyse (örn. "genel görünüm" için aynı yönü
+  // korumak istediğimizde) onu kullan; verilmediyse heading vektöründen hesapla.
+  const rotateDeg =
+    fixedRotateDeg !== undefined ? fixedRotateDeg : -90 - angleOfDeg(headingVector);
 
   const rotatedFocus = rotateVec(focusPoint, rotateDeg);
 
@@ -94,4 +97,21 @@ export function computeOrientTransform({
     tx: targetWorld.x - rotatedFocus.x * scale,
     ty: targetWorld.y - rotatedFocus.y * scale,
   };
+}
+
+// content noktalarını verilen açıyla döndürüp kapladıkları alanı (bbox) döner
+// — "genel görünüm" için gereken zoom seviyesini hesaplamakta kullanılır.
+export function rotatedBounds(points, rotateDeg) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of points) {
+    const r = rotateVec(p, rotateDeg);
+    minX = Math.min(minX, r.x);
+    maxX = Math.max(maxX, r.x);
+    minY = Math.min(minY, r.y);
+    maxY = Math.max(maxY, r.y);
+  }
+  return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
 }

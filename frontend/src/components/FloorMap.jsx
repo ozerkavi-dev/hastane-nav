@@ -1,8 +1,13 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePanZoom } from '../usePanZoom';
 import RoutePath from './RoutePath';
 import { offsetRoadPoints, getFrameAtWaypoint, ROAD_HALF_WIDTH } from '../roadGeometry';
-import { getProjection, computeOrientTransform, transformToSvgString } from '../svgProjection';
+import {
+  getProjection,
+  computeOrientTransform,
+  transformToSvgString,
+  rotatedBounds,
+} from '../svgProjection';
 import { getCategoryStyle, getRoomColors } from '../categoryStyles';
 
 // Resim kullanmak istersen buraya yolu yaz, örn: '/icons/location-pin.png'
@@ -20,6 +25,13 @@ const PADDING = 12;
 // yakınlaştırılmış olsun. screenFrac.y = 0.9 => alttan %10 yukarıda.
 const ORIENT_SCREEN_FRAC = { x: 0.5, y: 0.9 };
 const ORIENT_SCALE = 2.5;
+
+
+// Yeni bir rota hesaplandığında: önce tüm rotayı gösteren "genel görünüm",
+// sonra otomatik olarak yakın (yön odaklı) görünüme geçiş.
+const OVERVIEW_HOLD_MS = 1400; // genel görünümün ekranda kalma süresi
+const OVERVIEW_PADDING = 0.7; // rotanın görünür alanın ne kadarını dolduracağı
+const OVERVIEW_TRANSITION_MS = 650; // geçiş animasyonu süresi (styles.css ile eşleşmeli)
 
 function computeViewBoxRect(waypoints, policlinics, floor) {
   const wpPoints = Object.values(waypoints).filter((w) => w.floor === floor);
@@ -106,17 +118,10 @@ export default function FloorMap({
   // seçildiyse, gidiş yönünü gösterir); rota yoksa kullanıcının bulunduğu
   // koridorun yönü (sayfa ilk açıldığında); ikisi de yoksa katın tamamı
   // (kimlik dönüşümü, kuzey-yukarı).
-  // NOT: containerRef ve setTransform, aşağıdaki usePanZoom çağrısından
-  // geliyor — closure sayesinde recenter yalnızca ÇAĞRILDIĞINDA bunlara
-  // erişir (tanımlandığı an değil), bu yüzden sıralama sorun oluşturmuyor.
-  const recenter = useCallback(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return;
-
-    const proj = getProjection(viewBoxRect, rect);
-
+  // Saf hesaplama — setTransform çağırmaz, sadece {focusPoint, headingVector}
+  // döner (ya da bulamazsa null). recenter() ve genel-görünüm efekti ikisi de
+  // bunu kullanıyor.
+  const computeFocusAndHeading = useCallback(() => {
     let focusPoint = null;
     let headingVector = null;
 
@@ -128,8 +133,6 @@ export default function FloorMap({
       const wp = waypoints[userLocation.id];
       focusPoint = { x: userLocation.x, y: userLocation.y };
 
-      // Hastane merkezi (bu kat için): tüm kat sınırının orta noktası —
-      // "yukarı" olarak, mevcut koridor yönlerinden merkeze en çok bakanı seçiyoruz.
       const floorCenter = {
         x: viewBoxRect.minX + viewBoxRect.width / 2,
         y: viewBoxRect.minY + viewBoxRect.height / 2,
@@ -157,21 +160,7 @@ export default function FloorMap({
       }
     }
 
-    if (!focusPoint || !headingVector) {
-      setTransform({ scale: 1, rotateDeg: 0, tx: 0, ty: 0 });
-      return;
-    }
-
-    setTransform(
-      computeOrientTransform({
-        focusPoint,
-        headingVector,
-        screenFrac: ORIENT_SCREEN_FRAC,
-        scale: ORIENT_SCALE,
-        proj,
-        containerRect: rect,
-      })
-    );
+    return focusPoint && headingVector ? { focusPoint, headingVector } : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     viewBoxRect.minX,
@@ -185,16 +174,117 @@ export default function FloorMap({
     waypoints,
   ]);
 
+  // Manuel "ortala" (⌂ butonu / çift dokunma) — HER ZAMAN anında, animasyonsuz.
+  const recenter = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const found = computeFocusAndHeading();
+    if (!found) {
+      setTransform({ scale: 1, rotateDeg: 0, tx: 0, ty: 0 });
+      return;
+    }
+
+    setTransform(
+      computeOrientTransform({
+        ...found,
+        screenFrac: ORIENT_SCREEN_FRAC,
+        scale: ORIENT_SCALE,
+        proj: getProjection(viewBoxRect, rect),
+        containerRect: rect,
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [computeFocusAndHeading, viewBoxRect]);
+
   const { containerRef, transform, setTransform } = usePanZoom({
     viewBox: viewBoxRect,
     onDoubleTap: recenter,
   });
 
+  // Genel görünüm sırasında CSS transition uygulansın diye (gesture'lar
+  // sırasında bu KAPALI kalmalı, yoksa parmakla sürüklerken gecikme hissi olur).
+  const [orientAnimating, setOrientAnimating] = useState(false);
+  const overviewTimersRef = useRef([]);
+
   // Kat/konum/hedef değiştiğinde (sayfa açılışı, poliklinik seçimi) otomatik
-  // olarak ortala — kullanıcı sonradan elle kaydırırsa buna müdahale etmiyoruz.
+  // olarak ortala. Yeni bir ROTA varsa: önce 1-2 saniye tüm rotayı gösteren
+  // "genel görünüm", sonra otomatik olarak yakın (yön odaklı) görünüme geçiş.
   useEffect(() => {
-    const raf = requestAnimationFrame(() => recenter());
-    return () => cancelAnimationFrame(raf);
+    overviewTimersRef.current.forEach(clearTimeout);
+    overviewTimersRef.current = [];
+
+    const raf = requestAnimationFrame(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const found = computeFocusAndHeading();
+      if (!found) {
+        setOrientAnimating(false);
+        setTransform({ scale: 1, rotateDeg: 0, tx: 0, ty: 0 });
+        return;
+      }
+
+      const proj = getProjection(viewBoxRect, rect);
+      const tight = computeOrientTransform({
+        ...found,
+        screenFrac: ORIENT_SCREEN_FRAC,
+        scale: ORIENT_SCALE,
+        proj,
+        containerRect: rect,
+      });
+
+      const hasRoute = floorSegments.length > 0 && floorSegments[0].points.length >= 2;
+
+      if (!hasRoute) {
+        // Rota yok (sayfa ilk açılışı, hedef seçilmemiş) — direkt yakın görünüm.
+        setOrientAnimating(false);
+        setTransform(tight);
+        return;
+      }
+
+      // Rotanın tamamını (bu kattaki segment) kapsayacak bir "genel görünüm"
+      // hesapla — AYNI rotate açısını koruyarak, sadece zoom'u ayarlayarak.
+      const bounds = rotatedBounds(floorSegments[0].points, tight.rotateDeg);
+      const spanX = Math.max(bounds.width, 1);
+      const spanY = Math.max(bounds.height, 1);
+      const overviewScale = Math.min(
+        (viewBoxRect.width * OVERVIEW_PADDING) / spanX,
+        (viewBoxRect.height * OVERVIEW_PADDING) / spanY,
+        ORIENT_SCALE
+      );
+      const overviewFocus = {
+        x: floorSegments[0].points.reduce((s, p) => s + p.x, 0) / floorSegments[0].points.length,
+        y: floorSegments[0].points.reduce((s, p) => s + p.y, 0) / floorSegments[0].points.length,
+      };
+      const overview = computeOrientTransform({
+        focusPoint: overviewFocus,
+        rotateDeg: tight.rotateDeg,
+        screenFrac: { x: 0.5, y: 0.5 },
+        scale: overviewScale,
+        proj,
+        containerRect: rect,
+      });
+
+      setOrientAnimating(true);
+      setTransform(overview);
+
+      const t1 = setTimeout(() => {
+        setTransform(tight);
+        const t2 = setTimeout(() => setOrientAnimating(false), OVERVIEW_TRANSITION_MS);
+        overviewTimersRef.current.push(t2);
+      }, OVERVIEW_HOLD_MS);
+      overviewTimersRef.current.push(t1);
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      overviewTimersRef.current.forEach(clearTimeout);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [floor, userLocation && userLocation.id, selectedTarget && selectedTarget.id]);
 
@@ -219,7 +309,10 @@ export default function FloorMap({
             </marker>
           </defs>
 
-          <g transform={gTransform}>
+            <g
+              transform={gTransform}
+              className={orientAnimating ? 'floor-content-animated' : undefined}
+            >
             {/* Koridorlar: merkez çizgi + iki paralel kenar çizgisi ("yol" görünümü) */}
             {corridorRoads.map(([roadId, road]) => {
               const centerPts = road.nodes
